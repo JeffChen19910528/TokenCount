@@ -1,0 +1,9 @@
+{
+  "candidates": [
+    {
+      "content": {"parts": [{"text": "Here is my response..."}], "role": "model"}
+    }
+  ],
+  "prompt": "Explain the adapter design pattern in Python with a practical example.",
+  "completion": "The adapter pattern is a structural design pattern that allows objects with incompatible interfaces to work together. Here is a practical Python example..."
+}

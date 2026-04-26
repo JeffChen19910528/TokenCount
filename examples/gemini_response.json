@@ -1,0 +1,13 @@
+{
+  "candidates": [
+    {
+      "content": {"parts": [{"text": "Here is my response..."}], "role": "model"},
+      "finishReason": "STOP"
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 750,
+    "candidatesTokenCount": 420,
+    "totalTokenCount": 1170
+  }
+}
