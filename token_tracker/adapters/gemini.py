@@ -7,21 +7,14 @@ class GeminiAdapter(BaseAdapter):
 
     def parse(self, data: dict) -> TaskRecord:
         meta = data.get("usageMetadata", data.get("usage", {}))
-        prompt = meta.get("promptTokenCount", meta.get("prompt_tokens", 0))
-        completion = meta.get("candidatesTokenCount", meta.get("completion_tokens", 0))
+        prompt = self._first(meta, "promptTokenCount", "prompt_tokens")
+        completion = self._first(meta, "candidatesTokenCount", "completion_tokens")
         total = meta.get("totalTokenCount", meta.get("total_tokens", 0)) or prompt + completion
 
         # Fallback: estimate from raw text when no usage metadata present
         if total == 0:
-            prompt_text = data.get("prompt", "")
-            completion_text = data.get("completion", "")
-            prompt = self.estimate_tokens(prompt_text)
-            completion = self.estimate_tokens(completion_text)
+            prompt = self.estimate_tokens(data.get("prompt", ""))
+            completion = self.estimate_tokens(data.get("completion", ""))
             total = prompt + completion
 
-        return TaskRecord(
-            tool=self.tool_name,
-            prompt_tokens=prompt,
-            completion_tokens=completion,
-            total_tokens=total,
-        )
+        return self._record(prompt, completion, total)

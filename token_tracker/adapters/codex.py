@@ -7,12 +7,7 @@ class CodexAdapter(BaseAdapter):
 
     def parse(self, data: dict) -> TaskRecord:
         usage = data.get("usage", data)
-        prompt = usage.get("prompt_tokens", 0)
-        completion = usage.get("completion_tokens", 0)
-        total = usage.get("total_tokens", prompt + completion)
-        return TaskRecord(
-            tool=self.tool_name,
-            prompt_tokens=prompt,
-            completion_tokens=completion,
-            total_tokens=total,
-        )
+        prompt = self._first(usage, "prompt_tokens")
+        completion = self._first(usage, "completion_tokens")
+        total = usage.get("total_tokens")
+        return self._record(prompt, completion, total)

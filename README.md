@@ -13,11 +13,11 @@ TokenCount/
 │   ├── models.py                # TaskRecord dataclass
 │   ├── registry.py              # Adapter registry (register / get_adapter)
 │   ├── storage.py               # SQLite backend  →  token_usage.db
-│   ├── aggregator.py            # Per-tool and daily aggregation
-│   ├── reporter.py              # CLI output, CSV / JSON export
+│   ├── aggregator.py            # Per-tool and daily aggregation (only layer that touches storage)
+│   ├── reporter.py              # CLI output, CSV / JSON export (goes through aggregator only)
 │   └── adapters/
 │       ├── __init__.py
-│       ├── base.py              # BaseAdapter ABC + estimate_tokens()
+│       ├── base.py              # BaseAdapter ABC + estimate_tokens() / _first() / _record() helpers
 │       ├── claude.py            # Anthropic  (input_tokens / output_tokens)
 │       ├── codex.py             # OpenAI     (prompt_tokens / completion_tokens)
 │       └── gemini.py            # Google     (usageMetadata, fallback estimation)
@@ -103,10 +103,22 @@ Data is persisted in `token_usage.db` (SQLite) with two tables:
 | `tasks` | One row per recorded task (task_id, tool, prompt/completion/total tokens, timestamp) |
 | `tool_stats` | Running totals per tool (total_tokens, task_count) — updated on every insert |
 
+## Layering
+
+Each module only depends on the layer directly beneath it:
+
+```
+reporter.py  →  aggregator.py  →  storage.py
+```
+
+`reporter.py` never imports `storage` directly — it calls `aggregator.list_tasks()` / `summarize()` / `tool_report()`. This keeps the CLI output layer decoupled from the persistence layer, so storage can change without touching reporting.
+
 ## Adding a New Tool
 
 1. Create `token_tracker/adapters/mytool.py` extending `BaseAdapter`
 2. Set `tool_name = "mytool"` and implement `parse(data: dict) -> TaskRecord`
+   - Use `self._first(usage, "key_a", "key_b")` to read a field under multiple possible key names
+   - Use `self._record(prompt, completion, total)` to build the `TaskRecord` (computes `total` from `prompt + completion` when `total` is `None`)
 3. Register it in `token_tracker/registry.py`:
    ```python
    from .adapters.mytool import MyToolAdapter

@@ -2,8 +2,7 @@ import csv
 import json
 import sys
 
-from .aggregator import summarize, tool_report
-from .storage import get_tasks
+from .aggregator import summarize, tool_report, list_tasks
 
 
 def print_summary() -> None:
@@ -53,7 +52,7 @@ def print_tool_report(tool: str) -> None:
 
 
 def export_data(fmt: str, tool: str | None = None) -> None:
-    tasks = get_tasks(tool)
+    tasks = list_tasks(tool)
     fields = ["task_id", "tool", "prompt_tokens", "completion_tokens", "total_tokens", "timestamp"]
 
     if fmt == "csv":

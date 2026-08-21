@@ -16,3 +16,7 @@ def tool_report(tool: str) -> dict:
         "total_tokens": sum(t["total_tokens"] for t in tasks),
         "tasks": tasks,
     }
+
+
+def list_tasks(tool: str | None = None) -> list[dict]:
+    return get_tasks(tool)
